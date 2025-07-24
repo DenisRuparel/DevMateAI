@@ -14,8 +14,6 @@ const StartInterview = () => {
   const [userData, setUserData] = useState(null);
   const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
   const [activeUser, setActiveUser] = useState(false);
-  const [isCallActive, setIsCallActive] = useState(false);
-  const [userSpeaking, setUserSpeaking] = useState(false);
 
   useEffect(() => {
     interviewInfo && startCall();
@@ -91,51 +89,26 @@ Key Guidelines:
   }, [interviewInfo, setInterviewInfo]);
 
   const stopInterview = () => {
-    console.log("Stopping interview...");
-    try {
-      vapi.stop();
-      console.log("Vapi stopped successfully");
-    } catch (error) {
-      console.error("Error stopping vapi:", error);
-    }
+    vapi.stop();
   }
 
   vapi.on("call-start", () => {
     console.log("Call started");
-    setIsCallActive(true);
-    setActiveUser(false);
-    setUserSpeaking(true); // Show user animation initially
     toast("Interview Started...!")
   });
 
   vapi.on("speech-start", () => {
     console.log("Speech started - AI speaking");
-    setActiveUser(true);
-    setUserSpeaking(false); // Hide user animation when AI speaks
+    setActiveUser(false);
   });
 
   vapi.on("speech-end", () => {
     console.log("Speech ended - AI stopped");
-    setActiveUser(false);
-    setUserSpeaking(true); // Show user animation when AI stops
-  });
-
-  vapi.on("user-speech-start", () => {
-    console.log("User speech started");
-    setUserSpeaking(true);
-    setActiveUser(false); // AI not speaking when user speaks
-  });
-
-  vapi.on("user-speech-end", () => {
-    console.log("User speech ended");
-    setUserSpeaking(false);
+    setActiveUser(true);
   });
 
   vapi.on("call-end", () => {
     console.log("Call ended");
-    setIsCallActive(false);
-    setActiveUser(false);
-    setUserSpeaking(false);
     toast("Interview Ended...!")
   });
 
@@ -149,41 +122,25 @@ Key Guidelines:
       </h2>
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-7 mt-5'>
-        <div className='bg-white h-[400px] rounded-lg border flex flex-col items-center justify-center'>
-          <div className='relative flex items-center justify-center w-[80px] h-[80px]'>
-            {/* Voice effect rings */}
-            {activeUser && isCallActive && (
-              <>
-                <div className='absolute inset-0 bg-blue-400 rounded-full voice-animation'></div>
-                <div className='absolute inset-2 bg-blue-500 rounded-full voice-animation opacity-60' style={{animationDelay: '0.3s'}}></div>
-              </>
-            )}
-            {/* AI Image */}
-            <Image 
-              src={'/ai.jpg'} 
-              alt="ai" 
-              width={60} 
-              height={60} 
-              className='w-[60px] h-[60px] rounded-full object-cover relative z-10' 
+        <div className='bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center'>
+          <div className='relative'>
+            {activeUser && <span className='absolute inset-0 bg-blue-500 opacity-75 rounded-full animate-ping' />}
+            <Image
+              src={'/ai.jpg'}
+              alt="ai"
+              width={60}
+              height={60}
+              className='w-[60px] h-[60px] rounded-full object-cover relative z-10'
             />
           </div>
           <h2>AI Interviewer</h2>
         </div>
-        <div className='bg-white h-[400px] rounded-lg border flex flex-col items-center justify-center'>
-          <div className='relative flex items-center justify-center w-[80px] h-[80px]'>
-            {/* Voice effect rings for user */}
-            {userSpeaking && isCallActive && (
-              <>
-                <div className='absolute inset-0 bg-blue-400 rounded-full voice-animation'></div>
-                <div className='absolute inset-2 bg-blue-500 rounded-full voice-animation opacity-60' style={{animationDelay: '0.3s'}}></div>
-              </>
-            )}
-            {/* User Avatar */}
-            <h2 className='text-2xl bg-primary text-white p-3 rounded-full px-5 relative z-10'>
-              {userData?.userName?.[0] || 'U'}
-            </h2>
+        <div className='bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center'>
+          <div className='relative'>
+            {!activeUser && <span className='absolute inset-0 bg-blue-500 opacity-75 rounded-full animate-ping' />}
+            <h2 className='text-2xl bg-primary text-white p-3 rounded-full px-5 relative z-10'>{interviewInfo?.userName?.[0]}</h2>
           </div>
-          <h2>{userData?.userName || 'Loading...'}</h2>
+          <h2>{interviewInfo?.userName}</h2>
         </div>
       </div>
 
