@@ -21,7 +21,7 @@ const StartInterview = () => {
   const [isCallActive, setIsCallActive] = useState(false);
   const [conversation, setConversation] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
-  const {interview_id} = useParams();
+  const { interview_id } = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState();
 
@@ -100,71 +100,93 @@ Key Guidelines:
 
   const stopInterview = () => {
     console.log("stopInterview called, isCallActive:", isCallActive);
-    
+
     try {
       vapi.stop();
       console.log("vapi.stop() called successfully");
     } catch (error) {
       console.log("Error stopping call:", error);
     }
-    
+
     // Always generate feedback regardless of call state
     setIsCallActive(false);
     toast("Interview Ended...!");
-    
+
     setTimeout(() => {
       console.log("About to call GenerateFeedback from stopInterview");
       GenerateFeedback();
     }, 1000);
   }
 
-  vapi.on("call-start", () => {
-    console.log("Call started");
-    setIsCallActive(true);
-    toast("Interview Started...!")
-  });
+  // vapi.on("message", (message) => {
+  //   console.log("Message type:", message?.type);
 
-  vapi.on("speech-start", () => {
-    console.log("Speech started - AI speaking");
-    setActiveUser(false);
-  });
+  //   // Store all messages for debugging
+  //   setAllMessages(prev => [...prev, message]);
 
-  vapi.on("speech-end", () => {
-    console.log("Speech ended - AI stopped");
-    setActiveUser(true);
-  });
+  //   // Update conversation when we get conversation-update messages
+  //   if (message?.type === 'conversation-update' && message?.conversation) {
+  //     console.log("Updating conversation:", message.conversation);
+  //     setConversation(message.conversation);
+  //   }
+  // });
 
-  vapi.on("call-end", () => {
-    console.log("Call ended event triggered");
-    console.log("Current conversation state:", conversation);
-    setIsCallActive(false);
-    toast("Interview Ended...!")
-    
-    // Add a small delay to ensure conversation is captured
-    setTimeout(() => {
-      console.log("About to call GenerateFeedback");
-      GenerateFeedback();
-    }, 1000);
-  });
+  useEffect(() => {
+    const handleMessage = (message) => {
+      console.log("Message received:", message);
+      if (message?.conversation) {
+        const convoString = JSON.stringify(message.conversation);
+        console.log("Conversation stringified:", convoString);
+        setConversation(convoString);
+      }
+    };
 
-  vapi.on("message", (message) => {
-    console.log("Message type:", message?.type);
-    
-    // Store all messages for debugging
-    setAllMessages(prev => [...prev, message]);
-    
-    // Update conversation when we get conversation-update messages
-    if (message?.type === 'conversation-update' && message?.conversation) {
-      console.log("Updating conversation:", message.conversation);
-      setConversation(message.conversation);
-    }
-  });
+    vapi.on("message", handleMessage);
 
-  const GenerateFeedback = async() => {
+    vapi.on("call-start", () => {
+      console.log("Call started");
+      setIsCallActive(true);
+      toast("Interview Started...!")
+    });
+
+    vapi.on("speech-start", () => {
+      console.log("Speech started - AI speaking");
+      setActiveUser(false);
+    });
+
+    vapi.on("speech-end", () => {
+      console.log("Speech ended - AI stopped");
+      setActiveUser(true);
+    });
+
+    vapi.on("call-end", () => {
+      console.log("Call ended event triggered");
+      console.log("Current conversation state:", conversation);
+      setIsCallActive(false);
+      toast("Interview Ended...!")
+
+      // Add a small delay to ensure conversation is captured
+      setTimeout(() => {
+        console.log("About to call GenerateFeedback");
+        GenerateFeedback();
+      }, 1000);
+    });
+
+
+    return () => {
+      vapi.off("message", handleMessage);
+      vapi.off("call-start", () => console.log("END"));
+      vapi.off("speech-start", () => console.log("END"));
+      vapi.off("speech-end", () => console.log("END"));
+      vapi.off("call-end", () => console.log("END"));
+    };
+  }, []);
+
+  const GenerateFeedback = async () => {
     console.log("=== GenerateFeedback called ===");
     console.log("Final conversation data:", conversation);
     console.log("Conversation length:", conversation?.length);
-    
+
     if (!conversation || conversation.length === 0) {
       console.log("No conversation data available - returning early");
       toast("No conversation data to generate feedback");
@@ -172,7 +194,7 @@ Key Guidelines:
     }
 
     console.log("Proceeding with feedback generation...");
-    
+
     try {
       console.log("Calling /api/ai-feedback with:", conversation);
       const result = await axios.post('/api/ai-feedback', {
@@ -196,7 +218,7 @@ Key Guidelines:
           recommended: false
         })
         .select();
-        
+
       if (error) {
         console.error("Supabase error:", error);
         toast("Error saving feedback");
@@ -245,7 +267,7 @@ Key Guidelines:
       <div className='flex gap-5 items-center justify-center mt-7'>
         <Mic className='h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer' />
         {/* <AlertConfirmation stopInterview={stopInterview}> */}
-          {!loading ? <MdCallEnd className='h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer' onClick={() => stopInterview()}/> 
+        {!loading ? <MdCallEnd className='h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer' onClick={() => stopInterview()} />
           : <Loader2Icon className='animate-spin' />}
         {/* </AlertConfirmation> */}
       </div>
