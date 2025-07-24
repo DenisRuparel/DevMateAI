@@ -23,6 +23,7 @@ const StartInterview = () => {
   const [allMessages, setAllMessages] = useState([]);
   const {interview_id} = useParams();
   const router = useRouter();
+  const [loading, setLoading] = useState();
 
   useEffect(() => {
     interviewInfo && startCall();
@@ -243,9 +244,10 @@ Key Guidelines:
 
       <div className='flex gap-5 items-center justify-center mt-7'>
         <Mic className='h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer' />
-        <AlertConfirmation stopInterview={stopInterview}>
-          <MdCallEnd className='h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer' />
-        </AlertConfirmation>
+        {/* <AlertConfirmation stopInterview={stopInterview}> */}
+          {!loading ? <MdCallEnd className='h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer' onClick={() => stopInterview()}/> 
+          : <Loader2Icon className='animate-spin' />}
+        {/* </AlertConfirmation> */}
       </div>
 
       <h2 className='text-sm text-gray-400 text-center mt-5'>Interview in Progress...</h2>
