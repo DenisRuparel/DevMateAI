@@ -8,12 +8,19 @@ import { MdCallEnd } from 'react-icons/md';
 import Vapi from '@vapi-ai/web';
 import AlertConfirmation from './_components/AlertConfirmation';
 import { toast } from 'sonner';
+import TimerComponent from './_components/TimerComponent';
+import axios from 'axios';
+import { useParams, useRouter } from 'next/navigation';
 
 const StartInterview = () => {
   const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
   const [userData, setUserData] = useState(null);
   const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
   const [activeUser, setActiveUser] = useState(false);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [conversation, setConversation] = useState();
+  const {interview_id} = useParams();
+  const router = useRouter();
 
   useEffect(() => {
     interviewInfo && startCall();
@@ -89,11 +96,21 @@ Key Guidelines:
   }, [interviewInfo, setInterviewInfo]);
 
   const stopInterview = () => {
-    vapi.stop();
+    if (isCallActive) {
+      try {
+        vapi.stop();
+      } catch (error) {
+        console.log("Call already ended:", error);
+        toast("Interview has already ended");
+      }
+    } else {
+      toast("Interview is not active");
+    }
   }
 
   vapi.on("call-start", () => {
     console.log("Call started");
+    setIsCallActive(true);
     toast("Interview Started...!")
   });
 
@@ -109,15 +126,48 @@ Key Guidelines:
 
   vapi.on("call-end", () => {
     console.log("Call ended");
+    setIsCallActive(false);
     toast("Interview Ended...!")
+    GenerateFeedback();
   });
+
+  vapi.on("message", (message) => {
+    console.log("Message received", message?.conversation);
+    setConversation(message?.conversation)
+  });
+
+  const GenerateFeedback = async() => {
+    const result = await axios.post('/api/ai-feedback', {
+      conversation: conversation
+    });
+
+    console.log(result?.data);
+
+    const Content = result?.data?.data?.content;
+    const FINAL_CONTENT = Content.replace('```json\n?', '').replace('```', '');
+
+    console.log(FINAL_CONTENT);
+
+    const { data, error } = await supabase
+      .from('interview-feedback')
+      .insert({
+        userName: interviewInfo?.userName,
+        userEmail: interviewInfo?.userEmail,
+        interview_id: interview_id,
+        feedback: JSON.parse(FINAL_CONTENT),
+        recommended: false
+      })
+      .select();
+      console.log(data);
+      router.push('/interview/completed');
+  }
 
   return (
     <div className='p-10 lg:px-48 xl:px-56'>
       <h2 className='font-bold text-xl flex justify-between'>AI Interview Session
         <span className='flex gap-2 items-center'>
           <Timer />
-          00:00:00
+          <TimerComponent start={true} />
         </span>
       </h2>
 

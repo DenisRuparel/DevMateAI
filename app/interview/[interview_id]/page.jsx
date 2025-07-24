@@ -18,6 +18,7 @@ const Interview = () => {
 
     const [interviewData, setInterviewData] = useState();
     const [userName, setUserName] = useState();
+    const [userEmail, setUserEmail] = useState();
     const [loading, setLoading] = useState(false);
     const {interviewInfo, setInterviewInfo} = useContext(InterviewDataContext);
     const router = useRouter();
@@ -57,6 +58,7 @@ const Interview = () => {
             
             const interviewData = {
                 userName: userName,
+                userEmail: userEmail,
                 interviewData: interviews[0]
             };
             
@@ -72,7 +74,6 @@ const Interview = () => {
             toast("Incorrect Interview Link!")
         }
     }        
-
 
     return (
         <div className='px-10 md:px-28 lg:px-48 xl:px-80 mt-7'>
@@ -90,6 +91,11 @@ const Interview = () => {
                 <div className='w-full'>
                     <h2>Enter Your Name</h2>
                     <Input placeholder='e.g. Jhon Smith' onChange={(e) => setUserName(e.target.value)}/>
+                </div>
+                
+                <div className='w-full mt-5'>
+                    <h2>Enter Your Email</h2>
+                    <Input placeholder='e.g. jhon@gmail.com' onChange={(e) => setUserEmail(e.target.value)}/>
                 </div>
 
                 <div className='p-3 bg-blue-100 flex gap-4 rounded-lg mt-5'>
