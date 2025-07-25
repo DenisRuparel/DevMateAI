@@ -16,7 +16,7 @@ const LatestInterviewsList = () => {
         .select("*")
         .eq('userEmail', user?.email)
         .order('id', { ascending: false })
-        .limit(6)
+        .limit(3)
 
         console.log(interviews)
       setInterviewList(interviews);
