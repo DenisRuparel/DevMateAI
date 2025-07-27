@@ -1,26 +1,7 @@
-// import React from 'react'
-
-// const CandidateList = ({ candidateList }) => {
-
-//   return (
-//     <div className=''>
-//       <h2 className='font-bold my-5'>Candidates ({candidateList?.length})</h2>
-//         {candidateList.map((candidate, index) => (
-//             <div key={index} className='p-5'>
-//                 <h2>{candidate?.userName[0]}</h2>
-//             </div>
-//         ))}
-//     </div>
-//   )
-// }
-
-// export default CandidateList
-
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import moment from 'moment';
 import React from 'react';
-import { MdReport } from 'react-icons/md';
+import CandidateFeedbackDialog from './CandidateFeedbackDialog';
 
 const CandidateList = ({ candidateList }) => {
 
@@ -38,7 +19,7 @@ const CandidateList = ({ candidateList }) => {
           </div>
           <div className='flex gap-3 items-center'>
             <Badge variant={'outline'} className='text-green-600 font-medium'>Completed</Badge>
-            <Button variant={'outline'} className='text-primary'><MdReport />View Feedback</Button>
+            <CandidateFeedbackDialog candidateList={candidateList} />
           </div>
         </div>
       </div>

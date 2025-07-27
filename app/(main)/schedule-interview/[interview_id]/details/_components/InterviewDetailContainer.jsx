@@ -56,10 +56,6 @@ const InterviewDetailContainer = ({ interviewDetail }) => {
           ))}
         </div>
       </div>
-
-      <div className='flex justify-end'>
-        {/* <CandidateFeedbackDialog/> */}
-      </div>
     </div>
   )
 }
