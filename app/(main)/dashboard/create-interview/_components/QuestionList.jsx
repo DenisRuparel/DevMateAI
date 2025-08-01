@@ -35,6 +35,15 @@ const QuestionList = ({ formData, onCreateLink }) => {
         },
       ])
       .select()
+
+      const userUpdate = await supabase
+        .from('Users')
+        .update({ credits: Number(user?.credits) - 1 })
+        .eq('email', user?.email)
+        .select()
+
+      console.log("User Update:", userUpdate)
+
       setSaveLoading(false);
 
       onCreateLink(interview_id);
