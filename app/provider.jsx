@@ -11,7 +11,7 @@ const Provider = ({ children }) => {
     const pathname = usePathname()
 
     // Define public routes that don't require authentication
-    const publicRoutes = ['/', '/auth']
+    const publicRoutes = ["/", "/auth"]
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -22,40 +22,29 @@ const Provider = ({ children }) => {
                     console.log('No authenticated user found')
                     setLoading(false)
                     
-                    // Redirect to auth if trying to access protected route
-                    if (!publicRoutes.includes(pathname) && !pathname.startsWith('/interview/')) {
+                    // Only redirect if not already on a public route
+                    if (!publicRoutes.includes(pathname) && !pathname.startsWith('/interview/') && pathname !== '/auth') {
                         router.replace('/auth')
                     }
                     return
                 }
 
-                // User is authenticated, handle user creation/fetching
                 await handleUserData(user)
                 
             } catch (err) {
                 console.error('Error in auth initialization:', err)
                 setLoading(false)
                 
-                // Redirect to auth on error if on protected route
-                if (!publicRoutes.includes(pathname) && !pathname.startsWith('/interview/')) {
+                // Only redirect if not already on a public route
+                if (!publicRoutes.includes(pathname) && !pathname.startsWith('/interview/') && pathname !== '/auth') {
                     router.replace('/auth')
                 }
             }
         }
 
-        initializeAuth()
-        
-        // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                await handleUserData(session.user)
-            } else if (event === 'SIGNED_OUT') {
-                setUser(null)
-                router.replace('/auth')
-            }
-        })
-
-        return () => subscription.unsubscribe()
+        // Add a small delay to prevent immediate redirects
+        const timer = setTimeout(initializeAuth, 100)
+        return () => clearTimeout(timer)
     }, [router, pathname])
 
     const handleUserData = async (authUser) => {
