@@ -37,11 +37,18 @@ const AppSidebar = () => {
         }
     }
 
+    const handleCreateInterview = () => {
+        router.push('/dashboard/create-interview')
+    }
+
   return (
     <Sidebar>
       <SidebarHeader className='flex items-center mt-5'> 
         <Image src={'/logo.png'} alt="logo" width={200} height={100} className='w-[150px]'/>
-        <Button className='w-full mt-5'  > <Plus/> Create New Interview </Button>
+        <Button className='w-full mt-5' onClick={handleCreateInterview}>
+          <Plus className="mr-2 h-4 w-4"/> 
+          Create New Interview 
+        </Button>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
