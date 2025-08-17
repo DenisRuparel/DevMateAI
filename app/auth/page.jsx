@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabaseClient'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useUser } from '@/app/provider'
 
 function Signin() {
   const router = useRouter()
+  const { user } = useUser()
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     // Listen for auth state changes
@@ -23,6 +26,7 @@ function Signin() {
   }, [router])
 
   const signInWithGoogle = async () => {
+    setIsLoading(true)
     const {error} = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -32,6 +36,22 @@ function Signin() {
     if(error) {
       console.log('Error: ', error.message)
     }
+    setIsLoading(false)
+  }
+
+  const signOut = async () => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Error signing out:', error.message)
+      } else {
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+    setIsLoading(false)
   }
 
 
@@ -53,9 +73,40 @@ function Signin() {
 
             <h2 className='text-2xl font-bold text-center mt-5'>Welcome to DevMate AI</h2>
 
-            <p className='text-gray-500 text-center'>Sign in with Google Authentication</p>
-
-            <Button className='mt-7 w-full' onClick={signInWithGoogle}>Sign in with Google</Button>
+            {user ? (
+              <div className='text-center mt-5'>
+                <p className='text-gray-500 mb-4'>You are already signed in as:</p>
+                <p className='font-medium text-lg mb-6'>{user.name || user.email}</p>
+                <div className='space-y-3'>
+                  <Button 
+                    className='w-full' 
+                    onClick={() => router.push('/dashboard')}
+                    disabled={isLoading}
+                  >
+                    Go to Dashboard
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className='w-full' 
+                    onClick={signOut}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Signing Out...' : 'Sign Out'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className='text-center mt-5'>
+                <p className='text-gray-500 text-center'>Sign in with Google Authentication</p>
+                <Button 
+                  className='mt-7 w-full' 
+                  onClick={signInWithGoogle}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Signing In...' : 'Sign in with Google'}
+                </Button>
+              </div>
+            )}
         </div>
       </div>
     </div>

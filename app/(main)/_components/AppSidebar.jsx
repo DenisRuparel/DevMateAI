@@ -12,14 +12,30 @@ import {
 } from "@/components/ui/sidebar"
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, LogOut, User } from 'lucide-react'
 import { SidebarOptions } from '@/services/Constants'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { supabase } from '@/services/supabaseClient'
+import { useUser } from '@/app/provider'
 
 const AppSidebar = () => {
-
     const pathname = usePathname()
+    const router = useRouter()
+    const { user } = useUser()
+
+    const handleSignOut = async () => {
+        try {
+            const { error } = await supabase.auth.signOut()
+            if (error) {
+                console.error('Error signing out:', error.message)
+            } else {
+                router.push('/')
+            }
+        } catch (error) {
+            console.error('Error signing out:', error)
+        }
+    }
 
   return (
     <Sidebar>
@@ -45,7 +61,46 @@ const AppSidebar = () => {
             </SidebarContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter className="p-4">
+        <div className="space-y-3">
+          {/* User Profile Section */}
+          {user && (
+            <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+              {user.picture ? (
+                <Image 
+                  src={user.picture} 
+                  alt="Profile" 
+                  width={32} 
+                  height={32} 
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {user.name || user.email}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {/* Sign Out Button */}
+          <Button 
+            variant="outline" 
+            className="w-full justify-start" 
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }
