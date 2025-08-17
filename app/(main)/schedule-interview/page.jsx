@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import InterviewCard from '../dashboard/_components/InterviewCard';
 import { Button } from '@/components/ui/button';
 import { Video } from 'lucide-react';
+import Link from 'next/link';
 
 const ScheduleInterview = () => {
 
@@ -33,7 +34,9 @@ const ScheduleInterview = () => {
         <div className='bg-white rounded-xl p-5 flex flex-col gap-3 items-center mt-5'>
           <Video className='h-10 w-10 text-primary' />
           <h2>You don't have any interviews created!</h2>
-          <Button> + Create New Interview </Button>
+          <Link href="/dashboard/create-interview">
+            <Button> + Create New Interview </Button>
+          </Link>
         </div>
       }
 
