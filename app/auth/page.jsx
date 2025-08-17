@@ -3,13 +3,31 @@
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabaseClient'
 import Image from 'next/image'
-import React from 'react'
+import { useRouter } from 'next/navigation'
+import React, { useEffect } from 'react'
 
 function Signin() {
+  const router = useRouter()
+
+  useEffect(() => {
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          router.push('/dashboard')
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [router])
 
   const signInWithGoogle = async () => {
     const {error} = await supabase.auth.signInWithOAuth({
-      provider: 'google'
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`
+      }
     })
     if(error) {
       console.log('Error: ', error.message)
