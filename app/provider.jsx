@@ -10,6 +10,22 @@ const Provider = ({ children }) => {
     useEffect(() => {
         console.log('Provider mounted - starting user creation')
         CreateNewUser()
+
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                console.log('Auth state changed:', event, session?.user?.email)
+                
+                if (event === 'SIGNED_IN' && session?.user) {
+                    await CreateNewUser()
+                } else if (event === 'SIGNED_OUT') {
+                    console.log('User signed out, clearing user state')
+                    setUser(null)
+                }
+            }
+        )
+
+        return () => subscription.unsubscribe()
     }, [])
 
     const CreateNewUser = async () => {
@@ -18,6 +34,7 @@ const Provider = ({ children }) => {
             
             if (authError || !user) {
                 console.log('No authenticated user found')
+                setUser(null)
                 return
             }
 

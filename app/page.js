@@ -1,8 +1,53 @@
+"use client"
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useUser } from './provider'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { supabase } from '@/services/supabaseClient'
+import { User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react'
 
 export default function Home() {
+  const { user } = useUser()
+  const router = useRouter()
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Error signing out:', error.message)
+      } else {
+        setIsDropdownOpen(false)
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
+  const handleDashboardClick = () => {
+    setIsDropdownOpen(false)
+    router.push('/dashboard')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
       {/* Animated Background Elements */}
@@ -21,16 +66,65 @@ export default function Home() {
           <span className="text-2xl font-bold text-white">DevMate AI</span>
         </div>
         
-        <Link href="/auth">
-          <Button className="group bg-white text-purple-600 hover:bg-purple-50 px-8 py-3 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 border border-gray-100">
-            <span className="flex items-center space-x-2">
-              <span>Sign In</span>
-              <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </Button>
-        </Link>
+        {user ? (
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 px-4 py-2 rounded-2xl transition-all duration-300 border border-white/20"
+            >
+              {user.picture ? (
+                <Image 
+                  src={user.picture} 
+                  alt="Profile" 
+                  width={32} 
+                  height={32} 
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <span className="text-white font-medium text-sm hidden md:block">
+                {user.name || user.email?.split('@')[0]}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-white transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-2xl z-50">
+                <div className="py-2">
+                  <button
+                    onClick={handleDashboardClick}
+                    className="flex items-center space-x-3 w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors duration-200"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-3 w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors duration-200"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link href="/auth">
+            <Button className="group bg-white text-purple-600 hover:bg-purple-50 px-8 py-3 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 border border-gray-100">
+              <span className="flex items-center space-x-2">
+                <span>Sign In</span>
+                <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </Button>
+          </Link>
+        )}
       </header>
 
       {/* Hero Section */}
