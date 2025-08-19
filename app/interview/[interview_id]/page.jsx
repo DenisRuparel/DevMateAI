@@ -77,31 +77,31 @@ const Interview = () => {
 
     return (
         <div className='px-10 md:px-28 lg:px-48 xl:px-80 mt-7'>
-            <div className='flex flex-col items-center justify-center border rounded-lg bg-white p-7 lg:px-33 xl:px-52'>
-                <Image src={'/logo.png'} alt="logo" width={200} height={100} className='w-[140px]' />
+            <div className='flex flex-col items-center justify-center border border-border rounded-lg bg-card p-7 lg:px-33 xl:px-52'>
+                <Image src={'/logo2.png'} alt="logo" width={200} height={100} className='w-[140px]' />
 
-                <h2 className='mt-3'>AI-Powered Interview Platform</h2>
+                <h2 className='mt-3 text-card-foreground'>AI-Powered Interview Platform</h2>
 
                 <Image src={'/interview.png'} alt="interview" width={500} height={500} className='w-[280px] my-6' />
 
-                <h2 className='font-bold text-xl mt-3'>{interviewData?.jobPosition}</h2>
+                <h2 className='font-bold text-xl mt-3 text-card-foreground'>{interviewData?.jobPosition}</h2>
 
-                <h2 className='flex gap-2 items-center text-gray-500 mt-3'><Clock className='h-4 w-4' />{interviewData?.duration}</h2>
+                <h2 className='flex gap-2 items-center text-muted-foreground mt-3'><Clock className='h-4 w-4' />{interviewData?.duration}</h2>
 
                 <div className='w-full'>
-                    <h2>Enter Your Name</h2>
+                    <h2 className='text-card-foreground'>Enter Your Name</h2>
                     <Input placeholder='e.g. Jhon Smith' onChange={(e) => setUserName(e.target.value)}/>
                 </div>
                 
                 <div className='w-full mt-5'>
-                    <h2>Enter Your Email</h2>
+                    <h2 className='text-card-foreground'>Enter Your Email</h2>
                     <Input placeholder='e.g. jhon@gmail.com' onChange={(e) => setUserEmail(e.target.value)}/>
                 </div>
 
-                <div className='p-3 bg-blue-100 flex gap-4 rounded-lg mt-5'>
+                <div className='p-3 bg-primary/10 flex gap-4 rounded-lg mt-5'>
                     <Info className='text-primary' />
                     <div>
-                        <h2 className='font-bold'>Before You Begin</h2>
+                        <h2 className='font-bold text-card-foreground'>Before You Begin</h2>
                         <ul>
                             <li className='text-sm text-primary'>- Test your camera and microphone</li>
                             <li className='text-sm text-primary'>- Ensure you have a stable internet connection</li>

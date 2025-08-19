@@ -3,7 +3,7 @@ import DashboardProvider from './provider'
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className='bg-secondary'>
+    <div className='bg-background min-h-screen'>
         <DashboardProvider>
           <div>
             {children}

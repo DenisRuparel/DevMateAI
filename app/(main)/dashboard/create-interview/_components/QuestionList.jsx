@@ -78,10 +78,10 @@ const QuestionList = ({ formData, onCreateLink }) => {
   return (
     <div>
       {loading &&
-        <div className='p-5 bg-blue-50 rounded-xl border border-primary flex gap-5 items-center'>
-          <Loader2Icon className='animate-spin' />
+        <div className='p-5 bg-primary/10 rounded-xl border border-primary flex gap-5 items-center'>
+          <Loader2Icon className='animate-spin text-primary' />
           <div>
-            <h2 className='font-medium'>Generating Interview Questions...</h2>
+            <h2 className='font-medium text-card-foreground'>Generating Interview Questions...</h2>
             <p className='text-primary'>Our AI is crafting personalized questions based on your job description.</p>
           </div>
         </div>}

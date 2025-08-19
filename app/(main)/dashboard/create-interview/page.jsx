@@ -47,7 +47,7 @@ const CreateInterview = () => {
     <div className='mt-10 px-10 md:px-24 lg:px-44 xl:px-56'>
         <div className='flex gap-5 items-center'>
             <ArrowLeft onClick={() => router.back()} className='cursor-pointer'/>
-            <h2 className='font-bold text-2xl'>Create New Interview</h2>
+            <h2 className='font-bold text-2xl text-foreground'>Create New Interview</h2>
         </div>
             <Progress value={step >= 3 ? 100 : step * 33} className="my-5"/>
             {step == 1 ? <FormContainer onHandleInputChange={onHandleInputChange} GoToNext={() => onGoToNext()}/> : step == 2 ? <QuestionList formData={formData} onCreateLink={onCreateLink}/> : step == 3 ? <InterviewLink interview_id = {interview_id} formData={formData}/> : null}

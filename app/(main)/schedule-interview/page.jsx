@@ -29,7 +29,7 @@ const ScheduleInterview = () => {
 
   return (
     <div className='mt-5'>
-      <h2 className='font-bold text-2xl'>InterView List with Candidate Feedback</h2>
+      <h2 className='font-bold text-2xl'>Interview List with Candidate Feedback</h2>
       {interviewList?.length === 0 &&
         <div className='bg-white rounded-xl p-5 flex flex-col gap-3 items-center mt-5'>
           <Video className='h-10 w-10 text-primary' />

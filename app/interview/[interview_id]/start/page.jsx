@@ -1,7 +1,7 @@
 "use client"
 
 import { InterviewDataContext } from '@/context/InterviewDataContext';
-import { Mic, Timer } from 'lucide-react';
+import { Mic, Timer, Loader2Icon } from 'lucide-react';
 import Image from 'next/image';
 import React, { useContext, useEffect, useState } from 'react'
 import { MdCallEnd } from 'react-icons/md';
@@ -24,6 +24,7 @@ const StartInterview = () => {
   const { interview_id } = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState();
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   useEffect(() => {
     interviewInfo && startCall();
@@ -57,15 +58,15 @@ const StartInterview = () => {
   You are an AI voice assistant conducting interviews.
 Your job is to ask candidates provided interview questions, assess their responses.
 Begin the conversation with a friendly introduction, setting a relaxed yet professional tone. Example:
-"Hey there! Welcome to your ` + interviewInfo?.interviewData?.jobPosition + ` interview. Let’s get started with a few questions!"
-Ask one question at a time and wait for the candidate’s response before proceeding. Keep the questions clear and concise. Below Are the questions ask one by one:
+"Hey there! Welcome to your ` + interviewInfo?.interviewData?.jobPosition + ` interview. Let's get started with a few questions!"
+Ask one question at a time and wait for the candidate's response before proceeding. Keep the questions clear and concise. Below Are the questions ask one by one:
 Questions: ` + questionList + `
 If the candidate struggles, offer hints or rephrase the question without giving away the answer. Example:
 "Need a hint? Think about how React tracks component updates!"
 Provide brief, encouraging feedback after each answer. Example:
-"Nice! That’s a solid answer."
+"Nice! That's a solid answer."
 "Hmm, not quite! Want to try again?"
-Keep the conversation natural and engaging—use casual phrases like "Alright, next up..." or "Let’s tackle a tricky one!"
+Keep the conversation natural and engaging—use casual phrases like "Alright, next up..." or "Let's tackle a tricky one!"
 After 5-7 questions, wrap up the interview smoothly by summarizing their performance. Example:
 "That was great! You handled some tough questions well. Keep sharpening your skills!"
 End on a positive note:
@@ -73,7 +74,7 @@ End on a positive note:
 Key Guidelines:
 ✅ Be friendly, engaging, and witty 🎤
 ✅ Keep responses short and natural, like a real conversation
-✅ Adapt based on the candidate’s confidence level
+✅ Adapt based on the candidate's confidence level
 ✅ Ensure the interview remains focused on React
 `.trim(),
           },
@@ -193,6 +194,7 @@ Key Guidelines:
       return;
     }
 
+    setFeedbackLoading(true);
     console.log("Proceeding with feedback generation...");
 
     try {
@@ -204,6 +206,18 @@ Key Guidelines:
       console.log("AI feedback result:", result?.data);
 
       const Content = result?.data?.data?.content;
+      const isFallback = result?.data?.data?.fallback;
+      
+      // Show appropriate message based on whether fallback was used
+      if (isFallback) {
+        toast("AI service temporarily unavailable. Using basic feedback analysis.", {
+          duration: 4000,
+          description: "The interview feedback has been generated using a simplified analysis method."
+        });
+      } else {
+        toast("Interview feedback generated successfully!");
+      }
+
       const FINAL_CONTENT = Content.replace('```json\n?', '').replace('```', '');
 
       console.log("Final content:", FINAL_CONTENT);
@@ -228,13 +242,24 @@ Key Guidelines:
       }
     } catch (error) {
       console.error("Error generating feedback:", error);
-      toast("Error generating feedback");
+      
+      // Check if it's a network error or API error
+      if (error.response?.status === 500) {
+        toast("AI service is currently overloaded. Please try again in a few minutes.", {
+          duration: 5000,
+          description: "The interview has been saved and you can generate feedback later."
+        });
+      } else {
+        toast("Error generating feedback. Please try again.");
+      }
+    } finally {
+      setFeedbackLoading(false);
     }
   }
 
   return (
     <div className='p-10 lg:px-48 xl:px-56'>
-      <h2 className='font-bold text-xl flex justify-between'>AI Interview Session
+      <h2 className='font-bold text-xl flex justify-between text-foreground'>AI Interview Session
         <span className='flex gap-2 items-center'>
           <Timer />
           <TimerComponent start={true} />
@@ -242,9 +267,9 @@ Key Guidelines:
       </h2>
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-7 mt-5'>
-        <div className='bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center'>
+        <div className='bg-card border border-border h-[400px] rounded-lg flex flex-col gap-3 items-center justify-center'>
           <div className='relative'>
-            {activeUser && <span className='absolute inset-0 bg-blue-500 opacity-75 rounded-full animate-ping' />}
+            {activeUser && <span className='absolute inset-0 bg-primary opacity-75 rounded-full animate-ping' />}
             <Image
               src={'/ai.jpg'}
               alt="ai"
@@ -253,26 +278,36 @@ Key Guidelines:
               className='w-[60px] h-[60px] rounded-full object-cover relative z-10'
             />
           </div>
-          <h2>AI Interviewer</h2>
+          <h2 className='text-card-foreground'>AI Interviewer</h2>
         </div>
-        <div className='bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center'>
+        <div className='bg-card border border-border h-[400px] rounded-lg flex flex-col gap-3 items-center justify-center'>
           <div className='relative'>
-            {!activeUser && <span className='absolute inset-0 bg-blue-500 opacity-75 rounded-full animate-ping' />}
-            <h2 className='text-2xl bg-primary text-white p-3 rounded-full px-5 relative z-10'>{interviewInfo?.userName?.[0]}</h2>
+            {!activeUser && <span className='absolute inset-0 bg-primary opacity-75 rounded-full animate-ping' />}
+            <h2 className='text-2xl bg-primary text-primary-foreground p-3 rounded-full px-5 relative z-10'>{interviewInfo?.userName?.[0]}</h2>
           </div>
-          <h2>{interviewInfo?.userName}</h2>
+          <h2 className='text-card-foreground'>{interviewInfo?.userName}</h2>
         </div>
       </div>
 
       <div className='flex gap-5 items-center justify-center mt-7'>
-        <Mic className='h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer' />
+        <Mic className='h-12 w-12 p-3 bg-muted text-muted-foreground rounded-full cursor-pointer hover:bg-accent transition-colors' />
         {/* <AlertConfirmation stopInterview={stopInterview}> */}
-        {!loading ? <MdCallEnd className='h-12 w-12 p-3 bg-red-500 text-white rounded-full cursor-pointer' onClick={() => stopInterview()} />
-          : <Loader2Icon className='animate-spin' />}
+        {!loading && !feedbackLoading ? (
+          <MdCallEnd 
+            className='h-12 w-12 p-3 bg-destructive text-destructive-foreground rounded-full cursor-pointer hover:bg-destructive/90 transition-colors' 
+            onClick={() => stopInterview()} 
+          />
+        ) : (
+          <div className='h-12 w-12 p-3 bg-muted text-muted-foreground rounded-full flex items-center justify-center'>
+            <Loader2Icon className='animate-spin h-6 w-6' />
+          </div>
+        )}
         {/* </AlertConfirmation> */}
       </div>
 
-      <h2 className='text-sm text-gray-400 text-center mt-5'>Interview in Progress...</h2>
+      <h2 className='text-sm text-muted-foreground text-center mt-5'>
+        {feedbackLoading ? 'Generating feedback...' : 'Interview in Progress...'}
+      </h2>
     </div>
   )
 }

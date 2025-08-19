@@ -32,13 +32,13 @@ DevMate AI Team`);
   }
 
   return (
-    <div className='p-5 bg-white rounded-lg border mt-3'>
+    <div className='p-5 bg-card border border-border rounded-lg mt-3'>
       <div className='flex items-center justify-between'>
         <div className='h-[40px] w-[40px] bg-primary rounded-full'>
         </div>
-        <h2 className='text-sm'>{moment(interview?.created_at).format('DD MMM YYYY')}</h2>
+        <h2 className='text-sm text-muted-foreground'>{moment(interview?.created_at).format('DD MMM YYYY')}</h2>
       </div>
-      <h2 className='font-bold text-lg mt-3'>{interview?.jobPosition}</h2>
+      <h2 className='font-bold text-lg mt-3 text-card-foreground'>{interview?.jobPosition}</h2>
       {/* <h2 className='mt-2 flex justify-between text-gray-500'>{interview?.duration}
         <span className='text-green-700'>{interview['interview-feedback']?.length} Candidates</span>
       </h2> */}

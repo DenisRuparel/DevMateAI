@@ -23,11 +23,11 @@ const InterviewComplete = () => {
         <div className='bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 text-center border border-gray-100 dark:border-gray-700'>
           {/* Logo */}
           <Image 
-            src={'/logo.png'} 
+            src={'/logo2.png'} 
             alt="DevMate AI logo" 
             width={160} 
             height={80} 
-            className='mx-auto mb-6 w-[140px]' 
+            className='mx-auto mb-6 w-[160px]' 
           />
 
           {/* Congratulations Message */}
@@ -87,7 +87,7 @@ const InterviewComplete = () => {
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
             <Button 
               onClick={() => router.push('/dashboard')}
-              className='bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 flex items-center gap-2'
+              className='bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 flex items-center gap-2'
             >
               <Home className='h-5 w-5' />
               Back to Dashboard
@@ -95,7 +95,7 @@ const InterviewComplete = () => {
             <Button 
               variant="outline"
               onClick={() => router.push('/dashboard/create-interview')}
-              className='border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2'
+              className='border-2 border-border bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2'
             >
               Take Another Interview
               <ArrowRight className='h-5 w-5' />

@@ -29,12 +29,12 @@ const AllInterviews = () => {
     
     return (
     <div className='my-5'>
-      <h2 className='font-bold text-2xl'>All Previously Created Interviews</h2>
+      <h2 className='font-bold text-2xl text-foreground'>All Previously Created Interviews</h2>
 
       {interviewList?.length == 0 &&
-        <div className='bg-white rounded-xl p-5 flex flex-col gap-3 items-center mt-5'>
+        <div className='bg-card border border-border rounded-xl p-5 flex flex-col gap-3 items-center mt-5'>
           <Video className='h-10 w-10 text-primary' />
-          <h2>You don't have any interviews created!</h2>
+          <h2 className='text-card-foreground'>You don't have any interviews created!</h2>
           <Link href="/dashboard/create-interview">
             <Button> + Create New Interview </Button>
           </Link>
