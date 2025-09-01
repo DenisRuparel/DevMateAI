@@ -390,7 +390,7 @@ export default function Home() {
             </div>
             
             <Link href="/auth">
-              <Button size="lg" className="group relative text-xl px-16 py-8 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white border-0 rounded-full shadow-2xl hover:shadow-cyan-500/25 transform hover:scale-110 transition-all duration-300 relative z-10">
+              <Button size="lg" className="group relative text-xl px-16 py-8 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white border-0 rounded-full shadow-2xl hover:shadow-cyan-500/25 transform hover:scale-110 transition-all duration-300 z-10">
                 <span className="relative z-10 flex items-center space-x-2">
                   <span>Start Your Journey</span>
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

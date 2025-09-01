@@ -7,7 +7,7 @@ export const SidebarOptions = [
         path: '/dashboard',
     },
     {
-        name: 'Schedule Interview',
+        name: 'Past Interview',
         icon: Calendar,
         path: '/schedule-interview',
     },
@@ -16,11 +16,11 @@ export const SidebarOptions = [
         icon: List,
         path: '/all-interviews',
     },
-    {
-        name: 'Billing',
-        icon: WalletCards,
-        path: '/billing',
-    },
+    // {
+    //     name: 'Billing',
+    //     icon: WalletCards,
+    //     path: '/billing',
+    // },
     {
         name: 'Settings',
         icon: Settings,

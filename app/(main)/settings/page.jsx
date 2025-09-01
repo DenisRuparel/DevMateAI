@@ -14,12 +14,14 @@ import { useTheme } from '@/context/ThemeContext'
 import { supabase } from '@/services/supabaseClient'
 import { User, Bell, Shield, Palette, Globe, CreditCard, Trash2, Save, Camera } from 'lucide-react'
 import Image from 'next/image'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 const Settings = () => {
   const { user, setUser } = useUser()
   const { theme, setThemeMode } = useTheme()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
+  const [openDelete, setOpenDelete] = useState(false)
 
   // Profile Settings
   const [profileData, setProfileData] = useState({
@@ -69,18 +71,40 @@ const Settings = () => {
   }
 
   const handleDeleteAccount = async () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      setIsLoading(true)
-      try {
-        const { error } = await supabase.auth.admin.deleteUser(user.id)
-        if (error) {
-          console.error('Error deleting account:', error)
-        } else {
-          // Redirect to home page
-        }
-      } catch (error) {
-        console.error('Error deleting account:', error)
+    setIsLoading(true)
+    try {
+      const [{ data: { user: authUser }, error: authErr }, { data: { session }, error: sessionErr }] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.auth.getSession()
+      ])
+
+      if (authErr || sessionErr || !authUser?.id || !session?.access_token) {
+        console.error('Unable to get authenticated user for deletion:', authErr || sessionErr)
+        throw new Error('Not authenticated')
       }
+
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ userId: authUser.id })
+      })
+
+      const payload = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        console.error('Delete account failed:', payload?.error || 'Unknown error')
+        throw new Error(payload?.error || 'Delete failed')
+      }
+
+      setOpenDelete(false)
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Error deleting account:', error)
+    } finally {
       setIsLoading(false)
     }
   }
@@ -90,7 +114,7 @@ const Settings = () => {
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'interviews', label: 'Interview Settings', icon: Shield },
     { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'billing', label: 'Billing', icon: CreditCard },
+    // { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'danger', label: 'Danger Zone', icon: Trash2 }
   ]
 
@@ -389,7 +413,7 @@ const Settings = () => {
           )}
 
           {/* Billing Settings */}
-          {activeTab === 'billing' && (
+          {/* {activeTab === 'billing' && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -411,7 +435,7 @@ const Settings = () => {
                 <Button variant="outline">Upgrade Plan</Button>
               </CardContent>
             </Card>
-          )}
+          )} */}
 
           {/* Danger Zone */}
           {activeTab === 'danger' && (
@@ -431,14 +455,29 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Once you delete your account, there is no going back. Please be certain.
                   </p>
-                  <Button 
-                    variant="destructive" 
-                    onClick={handleDeleteAccount}
-                    disabled={isLoading}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    {isLoading ? 'Deleting...' : 'Delete Account'}
-                  </Button>
+
+                  <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive" disabled={isLoading}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {isLoading ? 'Deleting...' : 'Delete Account'}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete account?</DialogTitle>
+                        <DialogDescription>
+                          This action cannot be undone. This will permanently delete your account and remove your data from our servers.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setOpenDelete(false)} disabled={isLoading}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleDeleteAccount} disabled={isLoading}>
+                          {isLoading ? 'Deleting...' : 'Confirm Delete'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>
