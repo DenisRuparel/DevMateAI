@@ -2,7 +2,7 @@
 import { Progress } from '@/components/ui/progress'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import FormContainer from './_components/FormContainer'
 import QuestionList from './_components/QuestionList'
 import { toast } from 'sonner'
@@ -12,18 +12,43 @@ import { useUser } from '@/app/provider'
 const CreateInterview = () => {
     const router = useRouter();
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState();
+    const [formData, setFormData] = useState({});
     const [interview_id, setInterview_id] = useState();
 
     const { user } = useUser();
 
-    const onHandleInputChange = (field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: value
-        }))
+    // Load form data from localStorage on component mount
+    useEffect(() => {
+        const savedFormData = localStorage.getItem('createInterviewFormData');
+        if (savedFormData) {
+            try {
+                const parsed = JSON.parse(savedFormData);
+                setFormData(parsed);
+            } catch (error) {
+                console.error('Error parsing saved form data:', error);
+            }
+        }
+    }, []);
 
-        console.log("Form Data",formData)
+    // Cleanup function to clear localStorage when component unmounts
+    useEffect(() => {
+        return () => {
+            // Clear form data from localStorage when component unmounts
+            localStorage.removeItem('createInterviewFormData');
+        };
+    }, []);
+
+    const onHandleInputChange = (field, value) => {
+        const newFormData = {
+            ...formData,
+            [field]: value
+        };
+        setFormData(newFormData);
+        
+        // Save to localStorage
+        localStorage.setItem('createInterviewFormData', JSON.stringify(newFormData));
+        
+        console.log("Form Data", newFormData);
     }
 
     const onGoToNext = () => {
@@ -31,7 +56,7 @@ const CreateInterview = () => {
             toast("You don't have enough credits to create an interview!")
             return
         }
-        if(!formData ?. jobPosition || !formData ?. jobDescription || !formData ?. duration || !formData ?. type){
+        if(!formData?.jobPosition || !formData?.jobDescription || !formData?.duration || !formData?.type){
             toast("Please Enter all the details!")
             return
         }
@@ -41,6 +66,8 @@ const CreateInterview = () => {
     const onCreateLink = (interview_id) => {
         setInterview_id(interview_id)
         setStep(step + 1)
+        // Clear form data from localStorage after successful creation
+        localStorage.removeItem('createInterviewFormData');
     }
 
   return (
@@ -50,7 +77,7 @@ const CreateInterview = () => {
             <h2 className='font-bold text-2xl text-foreground'>Create New Interview</h2>
         </div>
             <Progress value={step >= 3 ? 100 : step * 33} className="my-5"/>
-            {step == 1 ? <FormContainer onHandleInputChange={onHandleInputChange} GoToNext={() => onGoToNext()}/> : step == 2 ? <QuestionList formData={formData} onCreateLink={onCreateLink}/> : step == 3 ? <InterviewLink interview_id = {interview_id} formData={formData}/> : null}
+            {step == 1 ? <FormContainer formData={formData} onHandleInputChange={onHandleInputChange} GoToNext={() => onGoToNext()}/> : step == 2 ? <QuestionList formData={formData} onCreateLink={onCreateLink}/> : step == 3 ? <InterviewLink interview_id = {interview_id} formData={formData}/> : null}
     </div>
   )
 }

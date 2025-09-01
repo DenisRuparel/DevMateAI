@@ -1,10 +1,9 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -12,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { useUser } from '@/app/provider'
 import { useTheme } from '@/context/ThemeContext'
 import { supabase } from '@/services/supabaseClient'
-import { User, Bell, Shield, Palette, Globe, CreditCard, Trash2, Save, Camera } from 'lucide-react'
+import { User, Palette, Trash2, Camera } from 'lucide-react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
@@ -32,43 +31,32 @@ const Settings = () => {
     phone: user?.phone || ''
   })
 
-  // Notification Settings
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    interviewReminders: true,
-    feedbackAlerts: true,
-    weeklyReports: false,
-    marketingEmails: false
-  })
-
-  // Interview Settings
-  const [interviewSettings, setInterviewSettings] = useState({
-    defaultDuration: '30',
-    autoRecord: true,
-    aiFeedback: true,
-    candidateNotifications: true,
-    timezone: 'UTC'
-  })
-
-  const handleProfileUpdate = async () => {
-    setIsLoading(true)
-    try {
-      const { error } = await supabase
-        .from('Users')
-        .update(profileData)
-        .eq('email', user.email)
-
-      if (error) {
-        console.error('Error updating profile:', error)
-      } else {
-        setUser({ ...user, ...profileData })
-        // Show success message
+  // Load profile data from localStorage on component mount
+  useEffect(() => {
+    const savedProfileData = localStorage.getItem('profileSettingsData');
+    if (savedProfileData) {
+      try {
+        const parsed = JSON.parse(savedProfileData);
+        setProfileData(parsed);
+      } catch (error) {
+        console.error('Error parsing saved profile data:', error);
       }
-    } catch (error) {
-      console.error('Error updating profile:', error)
     }
-    setIsLoading(false)
-  }
+  }, []);
+
+  // Save profile data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('profileSettingsData', JSON.stringify(profileData));
+  }, [profileData]);
+
+  // Cleanup function to clear localStorage when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear profile settings data from localStorage when component unmounts
+      localStorage.removeItem('profileSettingsData');
+    };
+  }, []);
+
 
   const handleDeleteAccount = async () => {
     setIsLoading(true)
@@ -111,10 +99,7 @@ const Settings = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'interviews', label: 'Interview Settings', icon: Shield },
     { id: 'appearance', label: 'Appearance', icon: Palette },
-    // { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'danger', label: 'Danger Zone', icon: Trash2 }
   ]
 
@@ -169,7 +154,7 @@ const Settings = () => {
                   <span>Profile Information</span>
                 </CardTitle>
                 <CardDescription>
-                  Update your personal information and profile picture
+                  your personal information and profile picture
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -195,9 +180,6 @@ const Settings = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Profile Picture</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Upload a new profile picture
-                    </p>
                   </div>
                 </div>
 
@@ -210,7 +192,9 @@ const Settings = () => {
                     <Input
                       id="name"
                       value={profileData.name}
-                      onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                      disabled
+                      // onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                      className="bg-muted"
                     />
                   </div>
                   <div className="space-y-2">
@@ -222,159 +206,8 @@ const Settings = () => {
                       className="bg-muted"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                      id="company"
-                      value={profileData.company}
-                      onChange={(e) => setProfileData({ ...profileData, company: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Input
-                      id="role"
-                      value={profileData.role}
-                      onChange={(e) => setProfileData({ ...profileData, role: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                    />
-                  </div>
                 </div>
 
-                <Button onClick={handleProfileUpdate} disabled={isLoading}>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notification Settings */}
-          {activeTab === 'notifications' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bell className="w-5 h-5" />
-                  <span>Notification Preferences</span>
-                </CardTitle>
-                <CardDescription>
-                  Choose how and when you want to be notified
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {Object.entries(notifications).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {key === 'emailNotifications' && 'Receive notifications via email'}
-                        {key === 'interviewReminders' && 'Get reminded about upcoming interviews'}
-                        {key === 'feedbackAlerts' && 'Receive alerts when feedback is ready'}
-                        {key === 'weeklyReports' && 'Get weekly summary reports'}
-                        {key === 'marketingEmails' && 'Receive promotional emails and updates'}
-                      </p>
-                    </div>
-                    <Switch
-                      checked={value}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, [key]: checked })
-                      }
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Interview Settings */}
-          {activeTab === 'interviews' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5" />
-                  <span>Interview Settings</span>
-                </CardTitle>
-                <CardDescription>
-                  Configure your default interview preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Default Interview Duration</Label>
-                    <Select
-                      value={interviewSettings.defaultDuration}
-                      onValueChange={(value) => 
-                        setInterviewSettings({ ...interviewSettings, defaultDuration: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="45">45 minutes</SelectItem>
-                        <SelectItem value="60">60 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select
-                      value={interviewSettings.timezone}
-                      onValueChange={(value) => 
-                        setInterviewSettings({ ...interviewSettings, timezone: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="UTC">UTC</SelectItem>
-                        <SelectItem value="EST">Eastern Time</SelectItem>
-                        <SelectItem value="PST">Pacific Time</SelectItem>
-                        <SelectItem value="GMT">GMT</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  {Object.entries(interviewSettings).filter(([key]) => 
-                    !['defaultDuration', 'timezone'].includes(key)
-                  ).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {key === 'autoRecord' && 'Automatically record all interviews'}
-                          {key === 'aiFeedback' && 'Enable AI-powered feedback generation'}
-                          {key === 'candidateNotifications' && 'Send notifications to candidates'}
-                        </p>
-                      </div>
-                      <Switch
-                        checked={value}
-                        onCheckedChange={(checked) => 
-                          setInterviewSettings({ ...interviewSettings, [key]: checked })
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
               </CardContent>
             </Card>
           )}
@@ -411,31 +244,6 @@ const Settings = () => {
               </CardContent>
             </Card>
           )}
-
-          {/* Billing Settings */}
-          {/* {activeTab === 'billing' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="w-5 h-5" />
-                  <span>Billing & Subscription</span>
-                </CardTitle>
-                <CardDescription>
-                  Manage your subscription and billing information
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-4 bg-muted rounded-lg">
-                  <h3 className="font-medium mb-2">Current Plan</h3>
-                  <Badge variant="secondary" className="mb-2">Free Plan</Badge>
-                  <p className="text-sm text-muted-foreground">
-                    You're currently on the free plan. Upgrade to unlock more features.
-                  </p>
-                </div>
-                <Button variant="outline">Upgrade Plan</Button>
-              </CardContent>
-            </Card>
-          )} */}
 
           {/* Danger Zone */}
           {activeTab === 'danger' && (

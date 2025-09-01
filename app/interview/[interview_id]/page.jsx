@@ -17,15 +17,30 @@ const Interview = () => {
     console.log(interview_id)
 
     const [interviewData, setInterviewData] = useState();
-    const [userName, setUserName] = useState();
-    const [userEmail, setUserEmail] = useState();
+    const [userName, setUserName] = useState('');
+    const [userEmail, setUserEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const {interviewInfo, setInterviewInfo} = useContext(InterviewDataContext);
     const router = useRouter();
 
     useEffect(() => {
         interview_id && GetInterviewDetails()
+        
+        // Load saved user data from localStorage
+        const savedUserName = localStorage.getItem('interviewUserName');
+        const savedUserEmail = localStorage.getItem('interviewUserEmail');
+        if (savedUserName) setUserName(savedUserName);
+        if (savedUserEmail) setUserEmail(savedUserEmail);
     }, [interview_id])
+
+    // Save user data to localStorage whenever it changes
+    useEffect(() => {
+        if (userName) localStorage.setItem('interviewUserName', userName);
+    }, [userName]);
+
+    useEffect(() => {
+        if (userEmail) localStorage.setItem('interviewUserEmail', userEmail);
+    }, [userEmail]);
 
     const GetInterviewDetails = async () => {
         setLoading(true);
@@ -73,7 +88,16 @@ const Interview = () => {
             setLoading(false);
             toast("Incorrect Interview Link!")
         }
-    }        
+    }
+
+    // Cleanup function to clear localStorage when component unmounts
+    useEffect(() => {
+        return () => {
+            // Clear interview-specific localStorage data when component unmounts
+            localStorage.removeItem('interviewUserName');
+            localStorage.removeItem('interviewUserEmail');
+        };
+    }, []);
 
     return (
         <div className='px-10 md:px-28 lg:px-48 xl:px-80 mt-7'>
@@ -90,12 +114,12 @@ const Interview = () => {
 
                 <div className='w-full'>
                     <h2 className='text-card-foreground'>Enter Your Name</h2>
-                    <Input placeholder='e.g. Jhon Smith' onChange={(e) => setUserName(e.target.value)}/>
+                    <Input placeholder='e.g. Jhon Smith' onChange={(e) => setUserName(e.target.value)} value={userName}/>
                 </div>
                 
                 <div className='w-full mt-5'>
                     <h2 className='text-card-foreground'>Enter Your Email</h2>
-                    <Input placeholder='e.g. jhon@gmail.com' onChange={(e) => setUserEmail(e.target.value)}/>
+                    <Input placeholder='e.g. jhon@gmail.com' onChange={(e) => setUserEmail(e.target.value)} value={userEmail}/>
                 </div>
 
                 <div className='p-3 bg-primary/10 flex gap-4 rounded-lg mt-5'>

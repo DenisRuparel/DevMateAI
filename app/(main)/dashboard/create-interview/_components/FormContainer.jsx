@@ -12,9 +12,9 @@ import { InterviewType } from '@/services/Constants'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-const FormContainer = ({ onHandleInputChange, GoToNext }) => {
+const FormContainer = ({ onHandleInputChange, GoToNext, formData = {} }) => {
 
-    const [interviewType, setInterviewType] = useState([]);
+    const [interviewType, setInterviewType] = useState(formData.type || []);
 
     useEffect(() => {
         if(interviewType){
@@ -37,17 +37,30 @@ const FormContainer = ({ onHandleInputChange, GoToNext }) => {
         <div className='p-5 bg-card border border-border rounded-2xl'>
             <div>
                 <h2 className='text-sm font-medium text-card-foreground'>Job Position</h2>
-                <Input placeholder='e.g. Full Stack Developer' className='mt-2' onChange={(e) => onHandleInputChange('jobPosition', e.target.value)}/>
+                <Input 
+                    placeholder='e.g. Full Stack Developer' 
+                    className='mt-2' 
+                    value={formData.jobPosition || ''}
+                    onChange={(e) => onHandleInputChange('jobPosition', e.target.value)}
+                />
             </div>
 
             <div className='mt-5'>
                 <h2 className='text-sm font-medium text-card-foreground'>Job Description</h2>
-                <Textarea placeholder='Enter details Job Description' className='h-[200px] mt-2' onChange={(e) => onHandleInputChange('jobDescription', e.target.value)}/>
+                <Textarea 
+                    placeholder='Enter details Job Description' 
+                    className='h-[200px] mt-2' 
+                    value={formData.jobDescription || ''}
+                    onChange={(e) => onHandleInputChange('jobDescription', e.target.value)}
+                />
             </div>
 
             <div className='mt-5'>
                 <h2 className='text-sm font-medium text-card-foreground'>Interview Duration</h2>
-                <Select onValueChange={(value) => onHandleInputChange('duration', value)}>
+                <Select 
+                    value={formData.duration || ''} 
+                    onValueChange={(value) => onHandleInputChange('duration', value)}
+                >
                     <SelectTrigger className="w-full mt-2">
                         <SelectValue placeholder="Select Duration" />
                     </SelectTrigger>
