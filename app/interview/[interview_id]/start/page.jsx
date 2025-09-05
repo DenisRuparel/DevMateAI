@@ -9,6 +9,7 @@ import Vapi from '@vapi-ai/web';
 import AlertConfirmation from './_components/AlertConfirmation';
 import { toast } from 'sonner';
 import TimerComponent from './_components/TimerComponent';
+import RealtimeAvatar from './_components/RealtimeAvatar';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/services/supabaseClient';
@@ -302,18 +303,8 @@ Key Guidelines:
       </h2>
 
       <div className='grid grid-cols-1 md:grid-cols-2 gap-7 mt-5'>
-        <div className='bg-card border border-border h-[400px] rounded-lg flex flex-col gap-3 items-center justify-center'>
-          <div className='relative'>
-            {activeUser && <span className='absolute inset-0 bg-primary opacity-75 rounded-full animate-ping' />}
-            <Image
-              src={'/ai.jpg'}
-              alt="ai"
-              width={60}
-              height={60}
-              className='w-[60px] h-[60px] rounded-full object-cover relative z-10'
-            />
-          </div>
-          <h2 className='text-card-foreground'>AI Interviewer</h2>
+        <div className='bg-card border border-border h-[400px] rounded-lg flex flex-col gap-3 items-center justify-center p-4'>
+          <RealtimeAvatar isSpeaking={!activeUser} name={'AI Interviewer'} />
         </div>
         <div className='bg-card border border-border h-[400px] rounded-lg flex flex-col gap-3 items-center justify-center'>
           <div className='relative'>
