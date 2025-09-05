@@ -22,31 +22,49 @@ const QuestionList = ({ formData, onCreateLink }) => {
   }, [formData])
 
   const onFinish = async () => {
+    if (saveLoading) return;
+    if (!questionList || questionList.length === 0) {
+      toast("Questions are not ready yet. Please wait a moment.");
+      return;
+    }
     setSaveLoading(true);
     const interview_id = uuidv4();
-    const { data, error } = await supabase
-      .from('interviews')
-      .insert([
-        { 
-          ...formData,
-          questionList: questionList,
-          userEmail: user?.email,
-          interview_id: interview_id
-        },
-      ])
-      .select()
+    try {
+      const insertPromise = supabase
+        .from('interviews')
+        .insert([
+          {
+            ...formData,
+            questionList: questionList,
+            userEmail: user?.email,
+            interview_id: interview_id,
+          },
+        ])
+        .select();
 
-      const userUpdate = await supabase
+      const updatePromise = supabase
         .from('Users')
         .update({ credits: Number(user?.credits) - 1 })
         .eq('email', user?.email)
-        .select()
+        .select();
 
-      console.log("User Update:", userUpdate)
+      const [insertResult, updateResult] = await Promise.all([insertPromise, updatePromise]);
 
-      setSaveLoading(false);
+      if (insertResult.error) {
+        throw insertResult.error;
+      }
+      if (updateResult.error) {
+        // Not fatal to interview creation; log and proceed
+        console.log('User credit update error:', updateResult.error);
+      }
 
       onCreateLink(interview_id);
+    } catch (e) {
+      console.error('Error creating interview:', e);
+      toast('Failed to create interview. Please try again.');
+    } finally {
+      setSaveLoading(false);
+    }
   }
 
   const GenerateQuestionList = async () => {

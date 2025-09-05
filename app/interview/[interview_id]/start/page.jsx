@@ -1,7 +1,7 @@
 "use client"
 
 import { InterviewDataContext } from '@/context/InterviewDataContext';
-import { Mic, Timer, Loader2Icon } from 'lucide-react';
+import { Mic, Timer, Loader2Icon, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
 import React, { useContext, useEffect, useState } from 'react'
 import { MdCallEnd } from 'react-icons/md';
@@ -25,6 +25,10 @@ const StartInterview = () => {
   const router = useRouter();
   const [loading, setLoading] = useState();
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [coachOpen, setCoachOpen] = useState(false);
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachData, setCoachData] = useState(null);
+  const [latestUserUtterance, setLatestUserUtterance] = useState("");
 
   useEffect(() => {
     interviewInfo && startCall();
@@ -139,6 +143,15 @@ Key Guidelines:
         const convoString = JSON.stringify(message.conversation);
         console.log("Conversation stringified:", convoString);
         setConversation(convoString);
+      }
+
+      // Capture user's latest utterance if present
+      try {
+        if (message?.transcript && message?.role === 'user') {
+          setLatestUserUtterance(message.transcript);
+        }
+      } catch (e) {
+        // no-op
       }
     };
 
@@ -257,6 +270,28 @@ Key Guidelines:
     }
   }
 
+  const GetCoachHelp = async () => {
+    if (!conversation || conversation.length === 0) {
+      toast("No conversation context yet.");
+      return;
+    }
+    setCoachLoading(true);
+    setCoachData(null);
+    try {
+      const res = await axios.post('/api/ai-coach', {
+        conversation: conversation,
+        userUtterance: latestUserUtterance
+      })
+      const data = res?.data?.data || res?.data
+      setCoachData(data?.coach || data)
+      setCoachOpen(true);
+    } catch (e) {
+      toast("Could not get coaching help. Try again.")
+    } finally {
+      setCoachLoading(false);
+    }
+  }
+
   return (
     <div className='p-10 lg:px-48 xl:px-56'>
       <h2 className='font-bold text-xl flex justify-between text-foreground'>AI Interview Session
@@ -291,6 +326,10 @@ Key Guidelines:
 
       <div className='flex gap-5 items-center justify-center mt-7'>
         <Mic className='h-12 w-12 p-3 bg-muted text-muted-foreground rounded-full cursor-pointer hover:bg-accent transition-colors' />
+        <HelpCircle 
+          className='h-12 w-12 p-3 bg-muted text-muted-foreground rounded-full cursor-pointer hover:bg-accent transition-colors'
+          onClick={GetCoachHelp}
+        />
         {/* <AlertConfirmation stopInterview={stopInterview}> */}
         {!loading && !feedbackLoading ? (
           <MdCallEnd 
@@ -306,8 +345,27 @@ Key Guidelines:
       </div>
 
       <h2 className='text-sm text-muted-foreground text-center mt-5'>
-        {feedbackLoading ? 'Generating feedback...' : 'Interview in Progress...'}
+        {feedbackLoading ? 'Generating feedback...' : coachLoading ? 'Preparing coaching tips...' : 'Interview in Progress...'}
       </h2>
+
+      {coachOpen && coachData && (
+        <div className='max-w-2xl mx-auto mt-6 bg-card border border-border rounded-lg p-5'>
+          <h3 className='font-semibold text-card-foreground mb-2'>Live Coaching</h3>
+          {coachData?.hint && (
+            <p className='text-sm text-muted-foreground'><span className='font-medium text-foreground'>Hint:</span> {coachData.hint}</p>
+          )}
+          {coachData?.corrected && (
+            <p className='text-sm text-muted-foreground mt-2'><span className='font-medium text-foreground'>Corrected Answer:</span> {coachData.corrected}</p>
+          )}
+          {Array.isArray(coachData?.tips) && coachData.tips.length > 0 && (
+            <ul className='list-disc pl-5 mt-2 text-sm text-muted-foreground'>
+              {coachData.tips.map((t, i) => (
+                <li key={i}>{t}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   )
 }

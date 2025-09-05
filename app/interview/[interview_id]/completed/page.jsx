@@ -1,12 +1,39 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Trophy, Star, ArrowRight, Home } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/services/supabaseClient'
+import { useParams } from 'next/navigation'
 
 const InterviewComplete = () => {
   const router = useRouter()
+  const { interview_id } = useParams()
+  const [feedback, setFeedback] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('interview-feedback')
+          .select('feedback')
+          .eq('interview_id', interview_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (!error && data?.feedback) {
+          setFeedback(data.feedback)
+        }
+      } catch (e) {
+        // no-op
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (interview_id) fetchFeedback()
+  }, [interview_id])
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4'>
@@ -53,7 +80,7 @@ const InterviewComplete = () => {
             <div className='text-center'>
               <Star className='h-8 w-8 text-blue-500 mx-auto mb-2' />
               <p className='text-sm text-gray-600 dark:text-gray-300'>AI Analysis</p>
-              <p className='font-bold text-gray-800 dark:text-white'>In Progress</p>
+              <p className='font-bold text-gray-800 dark:text-white'>{loading ? 'Loading...' : (feedback ? 'Ready' : 'Unavailable')}</p>
             </div>
             <div className='text-center'>
               <CheckCircle className='h-8 w-8 text-green-500 mx-auto mb-2' />
@@ -61,6 +88,50 @@ const InterviewComplete = () => {
               <p className='font-bold text-green-600'>Success</p>
             </div>
           </div>
+
+          {/* Feedback Summary */}
+          {!loading && feedback && (
+            <div className='mb-8 text-left'>
+              <h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>Your Feedback</h3>
+              <div className='bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 space-y-3'>
+                {feedback?.feedback?.rating && (
+                  <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                    <div>
+                      <p className='text-sm text-gray-600 dark:text-gray-300'>Technical</p>
+                      <p className='font-bold text-gray-800 dark:text-white'>{feedback.feedback.rating.technicalSkills ?? feedback.feedback.rating.techicalSkills}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-gray-600 dark:text-gray-300'>Communication</p>
+                      <p className='font-bold text-gray-800 dark:text-white'>{feedback.feedback.rating.communication}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-gray-600 dark:text-gray-300'>Problem Solving</p>
+                      <p className='font-bold text-gray-800 dark:text-white'>{feedback.feedback.rating.problemSolving}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-gray-600 dark:text-gray-300'>Experience</p>
+                      <p className='font-bold text-gray-800 dark:text-white'>{feedback.feedback.rating.experience ?? feedback.feedback.rating.experince}</p>
+                    </div>
+                  </div>
+                )}
+                {Array.isArray(feedback?.feedback?.summary) ? (
+                  <ul className='list-disc pl-5 text-gray-700 dark:text-gray-300'>
+                    {feedback.feedback.summary.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                ) : feedback?.feedback?.summery ? (
+                  <p className='text-gray-700 dark:text-gray-300'>{feedback.feedback.summery}</p>
+                ) : null}
+                {(feedback?.feedback?.recommendation || feedback?.feedback?.Recommendation) && (
+                  <p className='text-gray-800 dark:text-white font-medium'>Recommendation: {feedback.feedback.recommendation || feedback.feedback.Recommendation}</p>
+                )}
+                {(feedback?.feedback?.recommendationMsg || feedback?.feedback?.RecommendationMsg) && (
+                  <p className='text-gray-700 dark:text-gray-300'>{feedback.feedback.recommendationMsg || feedback.feedback.RecommendationMsg}</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Next Steps */}
           <div className='mb-8'>
