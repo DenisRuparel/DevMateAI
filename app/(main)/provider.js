@@ -1,7 +1,6 @@
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import AppSidebar from './_components/AppSidebar'
 import React from 'react'
-import WelcomeContainer from './dashboard/_components/WelcomeContainer'
 
 const DashboardProvider = ({ children }) => {
   return (
@@ -9,7 +8,6 @@ const DashboardProvider = ({ children }) => {
             <AppSidebar />
             <div className='w-full p-10'>
                 {/* <SidebarTrigger/> */}
-                <WelcomeContainer />
                 {children}
             </div>
         </SidebarProvider>
