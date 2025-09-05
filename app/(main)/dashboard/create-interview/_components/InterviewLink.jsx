@@ -21,6 +21,29 @@ const InterviewLink = ({ interview_id, formData }) => {
         toast("Link Copied!")
     }
 
+    const onShareEmail = () => {
+        const subject = 'Interview Invitation';
+        const body = `Hi,\n\nPlease join the interview using this link: ${url}\n\nThanks!`;
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(gmailUrl, '_blank');
+    }
+
+    const onShareWhatsApp = () => {
+        const text = `Please join the interview using this link: ${url}`;
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(waUrl, '_blank');
+    }
+
+    const onShareSlack = async () => {
+        // Without Slack app/team info, best UX is copy + instruct
+        try {
+            await navigator.clipboard.writeText(url);
+            toast("Link copied. Paste it into any Slack channel or DM.");
+        } catch (e) {
+            toast("Could not copy link. Please copy manually.");
+        }
+    }
+
     return (
         <div className='flex items-center flex-col justify-center mt-10'>
             <Image src={'/checked.png'} alt="check" width={200} height={200} className='w-[50px] h-[50px]' />
@@ -49,9 +72,9 @@ const InterviewLink = ({ interview_id, formData }) => {
             <div className='mt-7 bg-card border border-border p-5 rounded-lg w-full'>
                 <h2 className='font-bold text-card-foreground'>Share Interview Link Via</h2>
                 <div className='flex gap-7 mt-2'>
-                    <Button variant={'outline'}> <MdEmail /> Email</Button>
-                    <Button variant={'outline'}> <FaSlack /> Slack</Button>
-                    <Button variant={'outline'}> <FaWhatsapp /> WhatsApp</Button>
+                    <Button variant={'outline'} onClick={onShareEmail}> <MdEmail /> Email</Button>
+                    <Button variant={'outline'} onClick={onShareSlack}> <FaSlack /> Slack</Button>
+                    <Button variant={'outline'} onClick={onShareWhatsApp}> <FaWhatsapp /> WhatsApp</Button>
                 </div>
             </div>
             <div className='flex w-full gap-5 justify-between mt-6'>
