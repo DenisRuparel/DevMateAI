@@ -45,18 +45,33 @@ const Interview = () => {
     const GetInterviewDetails = async () => {
         setLoading(true);
         try {
+            console.log('Fetching interview details for ID:', interview_id);
             let { data: interviews, error } = await supabase
                 .from('interviews')
                 .select("jobPosition, jobDescription, duration, type")
                 .eq('interview_id', interview_id)
-            setInterviewData(interviews[0]);
-            setLoading(false);
+            
+            console.log('Interview data received:', interviews);
+            console.log('Error:', error);
+
+            if (error) {
+                console.error('Supabase error:', error);
+                toast("Error fetching interview details!");
+                setLoading(false);
+                return;
+            }
 
             if (interviews?.length == 0) {
+                console.log('No interview found with this ID');
                 toast("Incorrect Interview Link!")
+                setLoading(false);
                 return
             }
+
+            setInterviewData(interviews[0]);
+            setLoading(false);
         } catch (error) {
+            console.error('Unexpected error:', error);
             setLoading(false);
             toast("Incorrect Interview Link!")
         }
@@ -65,11 +80,28 @@ const Interview = () => {
     const onJoinInterview = async () => {
         setLoading(true);
         try {
+            console.log('Joining interview with ID:', interview_id);
             let { data: interviews, error } = await supabase
                 .from('interviews')
                 .select("*")
                 .eq('interview_id', interview_id)
-            console.log(interviews[0])
+            
+            console.log('Full interview data:', interviews);
+            console.log('Error:', error);
+
+            if (error) {
+                console.error('Supabase error:', error);
+                toast("Error fetching interview details!");
+                setLoading(false);
+                return;
+            }
+
+            if (interviews?.length == 0) {
+                console.log('No interview found with this ID');
+                toast("Incorrect Interview Link!")
+                setLoading(false);
+                return;
+            }
             
             const interviewData = {
                 userName: userName,
@@ -77,6 +109,7 @@ const Interview = () => {
                 interviewData: interviews[0]
             };
             
+            console.log('Setting interview info:', interviewData);
             setInterviewInfo(interviewData);
             
             // Store in localStorage
@@ -85,6 +118,7 @@ const Interview = () => {
             router.push('/interview/' + interview_id + '/start');
         }
         catch (error) {
+            console.error('Unexpected error:', error);
             setLoading(false);
             toast("Incorrect Interview Link!")
         }
@@ -98,6 +132,21 @@ const Interview = () => {
             localStorage.removeItem('interviewUserEmail');
         };
     }, []);
+
+    if (loading) {
+        return (
+            <div className='px-10 md:px-28 lg:px-48 xl:px-80 mt-7'>
+                <div className='flex flex-col items-center justify-center border border-border rounded-lg bg-card p-7 lg:px-33 xl:px-52'>
+                    <Image src={'/logo2.png'} alt="logo" width={200} height={100} className='w-[140px]' />
+                    <h2 className='mt-3 text-card-foreground'>AI-Powered Interview Platform</h2>
+                    <div className='flex flex-col items-center justify-center my-8'>
+                        <Loader2Icon className='h-8 w-8 animate-spin text-primary' />
+                        <p className='text-muted-foreground mt-2'>Loading interview details...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className='px-10 md:px-28 lg:px-48 xl:px-80 mt-7'>
