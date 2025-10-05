@@ -8,6 +8,7 @@ const nextConfig = {
         // there are ESLint errors. CI still runs a separate lint step.
         ignoreDuringBuilds: true,
     },
+    output: 'standalone',
 };
 
 export default nextConfig;
