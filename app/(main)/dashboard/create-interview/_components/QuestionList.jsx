@@ -22,31 +22,49 @@ const QuestionList = ({ formData, onCreateLink }) => {
   }, [formData])
 
   const onFinish = async () => {
+    if (saveLoading) return;
+    if (!questionList || questionList.length === 0) {
+      toast("Questions are not ready yet. Please wait a moment.");
+      return;
+    }
     setSaveLoading(true);
     const interview_id = uuidv4();
-    const { data, error } = await supabase
-      .from('interviews')
-      .insert([
-        { 
-          ...formData,
-          questionList: questionList,
-          userEmail: user?.email,
-          interview_id: interview_id
-        },
-      ])
-      .select()
+    try {
+      const insertPromise = supabase
+        .from('interviews')
+        .insert([
+          {
+            ...formData,
+            questionList: questionList,
+            userEmail: user?.email,
+            interview_id: interview_id,
+          },
+        ])
+        .select();
 
-      const userUpdate = await supabase
+      const updatePromise = supabase
         .from('Users')
         .update({ credits: Number(user?.credits) - 1 })
         .eq('email', user?.email)
-        .select()
+        .select();
 
-      console.log("User Update:", userUpdate)
+      const [insertResult, updateResult] = await Promise.all([insertPromise, updatePromise]);
 
-      setSaveLoading(false);
+      if (insertResult.error) {
+        throw insertResult.error;
+      }
+      if (updateResult.error) {
+        // Not fatal to interview creation; log and proceed
+        console.log('User credit update error:', updateResult.error);
+      }
 
       onCreateLink(interview_id);
+    } catch (e) {
+      console.error('Error creating interview:', e);
+      toast('Failed to create interview. Please try again.');
+    } finally {
+      setSaveLoading(false);
+    }
   }
 
   const GenerateQuestionList = async () => {
@@ -78,10 +96,10 @@ const QuestionList = ({ formData, onCreateLink }) => {
   return (
     <div>
       {loading &&
-        <div className='p-5 bg-blue-50 rounded-xl border border-primary flex gap-5 items-center'>
-          <Loader2Icon className='animate-spin' />
+        <div className='p-5 bg-primary/10 rounded-xl border border-primary flex gap-5 items-center'>
+          <Loader2Icon className='animate-spin text-primary' />
           <div>
-            <h2 className='font-medium'>Generating Interview Questions...</h2>
+            <h2 className='font-medium text-card-foreground'>Generating Interview Questions...</h2>
             <p className='text-primary'>Our AI is crafting personalized questions based on your job description.</p>
           </div>
         </div>}

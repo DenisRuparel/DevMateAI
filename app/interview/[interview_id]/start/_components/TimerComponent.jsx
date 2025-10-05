@@ -24,7 +24,7 @@ const TimerComponent = ({ start }) => {
   }
 
   return (
-    <div className="text-lg font-mono">
+    <div className="text-lg font-mono text-foreground">
       {formatTime(time)}
     </div>
   )

@@ -12,20 +12,56 @@ import {
 } from "@/components/ui/sidebar"
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, LogOut, User, Sun, Moon, Monitor } from 'lucide-react'
 import { SidebarOptions } from '@/services/Constants'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { supabase } from '@/services/supabaseClient'
+import { useUser } from '@/app/provider'
+import { useTheme } from '@/context/ThemeContext'
 
 const AppSidebar = () => {
-
     const pathname = usePathname()
+    const router = useRouter()
+    const { user } = useUser()
+    const { theme, toggleTheme } = useTheme()
+
+    const handleSignOut = async () => {
+        try {
+            const { error } = await supabase.auth.signOut()
+            if (error) {
+                console.error('Error signing out:', error.message)
+            } else {
+                router.push('/')
+            }
+        } catch (error) {
+            console.error('Error signing out:', error)
+        }
+    }
+
+    const handleCreateInterview = () => {
+        router.push('/dashboard/create-interview')
+    }
+
+    const getThemeIcon = () => {
+        switch (theme) {
+            case 'light':
+                return <Sun className="w-4 h-4" />
+            case 'dark':
+                return <Moon className="w-4 h-4" />
+            default:
+                return <Monitor className="w-4 h-4" />
+        }
+    }
 
   return (
     <Sidebar>
       <SidebarHeader className='flex items-center mt-5'> 
-        <Image src={'/logo.png'} alt="logo" width={200} height={100} className='w-[150px]'/>
-        <Button className='w-full mt-5'  > <Plus/> Create New Interview </Button>
+        <Image src={'/logo2.png'} alt="logo" width={200} height={100} className='w-[180px]'/>
+        <Button className='w-full mt-7' onClick={handleCreateInterview}>
+          <Plus className="mr-2 h-4 w-4"/> 
+          Create New Interview 
+        </Button>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -45,7 +81,58 @@ const AppSidebar = () => {
             </SidebarContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter className="p-4">
+        <div className="space-y-3">
+          {/* Theme Toggle */}
+          <Button 
+            variant="outline" 
+            className="w-full justify-start" 
+            onClick={toggleTheme}
+          >
+            {getThemeIcon()}
+            <span className="ml-2">
+              {theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'System'}
+            </span>
+          </Button>
+
+          {/* User Profile Section */}
+          {user && (
+            <div className="flex items-center space-x-3 p-3 bg-secondary rounded-lg">
+              {user.picture ? (
+                <Image 
+                  src={user.picture} 
+                  alt="Profile" 
+                  width={32} 
+                  height={32} 
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {user.name || user.email}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {/* Sign Out Button */}
+          <Button 
+            variant="outline" 
+            className="w-full justify-start" 
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }
