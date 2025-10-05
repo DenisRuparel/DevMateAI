@@ -66,7 +66,7 @@ const InterviewComplete = () => {
               Interview Completed Successfully
             </h2>
             <p className='text-gray-500 dark:text-gray-400 max-w-md mx-auto'>
-              You've successfully completed your AI-powered interview. Great job on taking this important step!
+              You&apos;ve successfully completed your AI-powered interview. Great job on taking this important step!
             </p>
           </div>
 
@@ -136,7 +136,7 @@ const InterviewComplete = () => {
           {/* Next Steps */}
           <div className='mb-8'>
             <h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>
-              What's Next?
+              What&apos;s Next?
             </h3>
             <div className='text-left bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 space-y-3'>
               <div className='flex items-center gap-3'>
@@ -177,7 +177,7 @@ const InterviewComplete = () => {
         {/* Footer Message */}
         <div className='text-center mt-8'>
           <p className='text-gray-500 dark:text-gray-400 text-sm'>
-            Thank you for using DevMate AI. We're here to help you succeed! 🚀
+            Thank you for using DevMate AI. We&apos;re here to help you succeed! 🚀
           </p>
         </div>
       </div>

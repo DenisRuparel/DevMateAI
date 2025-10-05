@@ -33,7 +33,7 @@ const LatestInterviewsList = () => {
       {interviewList?.length == 0 &&
         <div className='bg-card border border-border rounded-xl p-5 flex flex-col gap-3 items-center mt-5'>
           <Video className='h-10 w-10 text-primary' />
-          <h2 className='text-card-foreground'>You don't have any interviews created!</h2>
+          <h2 className='text-card-foreground'>You don&apos;t have any interviews created!</h2>
           <Button> + Create New Interview </Button>
         </div>
       }

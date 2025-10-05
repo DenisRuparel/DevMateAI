@@ -53,7 +53,7 @@ const CreateInterview = () => {
 
     const onGoToNext = () => {
         if(user?.credits <= 0){
-            toast("You don't have enough credits to create an interview!")
+            toast("You don&apos;t have enough credits to create an interview!")
             return
         }
         if(!formData?.jobPosition || !formData?.jobDescription || !formData?.duration || !formData?.type){

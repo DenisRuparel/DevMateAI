@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import InterviewHeader from './_components/InterviewHeader'
 import { InterviewDataContext } from '@/context/InterviewDataContext'
 
-const interviewLayout = ({ children }) => {
+const InterviewLayout = ({ children }) => {
 
   const [interviewInfo, setInterviewInfo] = useState()
 
@@ -17,4 +17,4 @@ const interviewLayout = ({ children }) => {
   )
 }
 
-export default interviewLayout
+export default InterviewLayout

@@ -238,7 +238,7 @@ const Settings = () => {
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-muted-foreground">
-                    Choose your preferred theme. System will follow your device's theme setting.
+                    Choose your preferred theme. System will follow your device&apos;s theme setting.
                   </p>
                 </div>
               </CardContent>
