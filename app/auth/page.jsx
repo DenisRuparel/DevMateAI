@@ -30,7 +30,8 @@ function Signin() {
     const {error} = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_HOST_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/dashboard`
+        // Return to /auth so this page's effect can route to /dashboard on SIGNED_IN
+        redirectTo: `${process.env.NEXT_PUBLIC_HOST_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/auth`
       }
     })
     if(error) {
