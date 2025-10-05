@@ -43,7 +43,8 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: .
-          vercel-args: --prebuilt --prod=false
+          # No --prebuilt; let Vercel build during deploy (preview by default)
+          vercel-args: ''
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
