@@ -46,3 +46,28 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key # Keep this secret; nev
 ```
 
 After adding or changing env vars, restart the dev server: `npm run dev`.
+
+## CI/CD with GitHub Actions and Vercel
+
+This repo includes GitHub Actions workflows for CI and deployments:
+
+- `.github/workflows/ci.yml`: Lints and builds on every push and pull request.
+- `.github/workflows/vercel-preview.yml`: Builds and deploys a Preview for pull requests.
+- `.github/workflows/vercel-production.yml`: Builds and deploys to Production on pushes to `master` or `main`.
+
+### Required GitHub Secrets
+
+Add these repository secrets in GitHub Settings → Secrets and variables → Actions:
+
+- `VERCEL_TOKEN`: Vercel personal access token
+- `VERCEL_ORG_ID`: Vercel organization ID
+- `VERCEL_PROJECT_ID`: Vercel project ID
+
+If your build uses environment variables, also add them as Actions variables or secrets (e.g. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) and expose them in the workflows' `env` sections if needed.
+
+### How it works
+
+1. On PRs, CI installs dependencies, lints, builds, then deploys a Vercel Preview environment.
+2. On `master`/`main` pushes, it builds and deploys to Production in Vercel.
+
+You can find the preview/production URLs in the workflow run output.
