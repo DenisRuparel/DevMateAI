@@ -13,6 +13,11 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Provide safe defaults for envs required at build time
+ARG NEXT_PUBLIC_SUPABASE_URL=https://eyqnnncafnxqfsysoygx.supabase.co
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cW5ubmNhZm54cWZzeXNveWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MTQ0NzAsImV4cCI6MjA2ODM5MDQ3MH0.zwWGwNOWQg8UqnNgg0L-td-0EssyPkGuaGWyIRwqFz8
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://localhost}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-dummy_anon_key}
 # Ensure a reproducible build
 RUN npm run build
 
