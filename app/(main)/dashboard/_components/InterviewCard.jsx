@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 const InterviewCard = ({ interview, viewDetail=false }) => {
 
-  const url = process.env.NEXT_PUBLIC_HOST_URL + '/' + interview?.interview_id;
+  const url = process.env.NEXT_PUBLIC_HOST_URL + '/interview/' + interview?.interview_id;
 
   const CopyInterviewLink = () => {
     navigator.clipboard.writeText(url);
