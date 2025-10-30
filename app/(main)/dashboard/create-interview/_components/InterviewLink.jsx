@@ -10,7 +10,8 @@ import { MdEmail } from 'react-icons/md'
 
 const InterviewLink = ({ interview_id, formData }) => {
     
-    const url = process.env.NEXT_PUBLIC_HOST_URL + '/' + interview_id;
+    // FIX: Use the same URL structure as InterviewCard (with /interview/)
+    const url = process.env.NEXT_PUBLIC_HOST_URL + '/interview/' + interview_id;
     
     const GetInterviewUrl = () => {
         return url;

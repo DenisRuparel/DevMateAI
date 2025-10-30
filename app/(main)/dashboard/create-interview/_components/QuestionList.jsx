@@ -29,6 +29,9 @@ const QuestionList = ({ formData, onCreateLink }) => {
     }
     setSaveLoading(true);
     const interview_id = uuidv4();
+
+    // Create a failsafe for the insert operation.
+    let timeoutId;
     try {
       const insertPromise = supabase
         .from('interviews')
@@ -48,21 +51,32 @@ const QuestionList = ({ formData, onCreateLink }) => {
         .eq('email', user?.email)
         .select();
 
-      const [insertResult, updateResult] = await Promise.all([insertPromise, updatePromise]);
+      // Failsafe timeout: if DB doesn't respond in 15 seconds, stop loading and show toast
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error("Database timeout: interview creation took too long. Please try again."));
+        }, 15000);
+      });
 
-      if (insertResult.error) {
+      const [insertResult, updateResult] = await Promise.race([
+        Promise.all([insertPromise, updatePromise]),
+        timeoutPromise,
+      ]);
+
+      if (insertResult?.error) {
         throw insertResult.error;
       }
-      if (updateResult.error) {
+      if (updateResult?.error) {
         // Not fatal to interview creation; log and proceed
         console.log('User credit update error:', updateResult.error);
       }
-
       onCreateLink(interview_id);
     } catch (e) {
       console.error('Error creating interview:', e);
-      toast('Failed to create interview. Please try again.');
+      // Show a toast for any error (supabase or timeout)
+      toast('Failed to create interview: ' + (e.message || 'Unknown error. Please try again.'));
     } finally {
+      clearTimeout(timeoutId);
       setSaveLoading(false);
     }
   }
