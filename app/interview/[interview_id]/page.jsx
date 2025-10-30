@@ -46,11 +46,17 @@ const Interview = () => {
         setLoading(true);
         try {
             console.log('Fetching interview details for ID:', interview_id);
-            let { data: interviews, error } = await supabase
+            const fetchPromise = supabase
                 .from('interviews')
                 .select("jobPosition, jobDescription, duration, type")
-                .eq('interview_id', interview_id)
-            
+                .eq('interview_id', interview_id);
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout while loading interview details')), 15000)
+            );
+
+            const { data: interviews, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
             console.log('Interview data received:', interviews);
             console.log('Error:', error);
 
@@ -61,9 +67,9 @@ const Interview = () => {
                 return;
             }
 
-            if (interviews?.length == 0) {
+            if (!interviews || interviews?.length === 0) {
                 console.log('No interview found with this ID');
-                toast("Incorrect Interview Link!")
+                toast("Incorrect or expired Interview Link!")
                 setLoading(false);
                 return
             }
@@ -73,7 +79,7 @@ const Interview = () => {
         } catch (error) {
             console.error('Unexpected error:', error);
             setLoading(false);
-            toast("Incorrect Interview Link!")
+            toast(error?.message || "Unable to load interview. Please try again.")
         }
     }
 
@@ -81,11 +87,17 @@ const Interview = () => {
         setLoading(true);
         try {
             console.log('Joining interview with ID:', interview_id);
-            let { data: interviews, error } = await supabase
+            const fetchPromise = supabase
                 .from('interviews')
                 .select("*")
-                .eq('interview_id', interview_id)
-            
+                .eq('interview_id', interview_id);
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout while starting interview')), 15000)
+            );
+
+            const { data: interviews, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
             console.log('Full interview data:', interviews);
             console.log('Error:', error);
 
@@ -96,7 +108,7 @@ const Interview = () => {
                 return;
             }
 
-            if (interviews?.length == 0) {
+            if (!interviews || interviews?.length === 0) {
                 console.log('No interview found with this ID');
                 toast("Incorrect Interview Link!")
                 setLoading(false);
@@ -120,7 +132,7 @@ const Interview = () => {
         catch (error) {
             console.error('Unexpected error:', error);
             setLoading(false);
-            toast("Incorrect Interview Link!")
+            toast(error?.message || "Unable to start interview. Please try again.")
         }
     }
 
